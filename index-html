@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的小游戏网站</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+    body {
+      background: #f5f5f5;
+      color: #333;
+      text-align: center;
+      padding: 20px;
+    }
+    header {
+      margin: 30px 0;
+    }
+    h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+    .game-box {
+      background: white;
+      max-width: 360px;
+      margin: 20px auto;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .game-btn {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .game-btn:hover {
+      background: #388E3C;
+    }
+    .game-area {
+      display: none;
+      margin-top: 20px;
+    }
+    .back {
+      margin: 15px 0;
+      color: #4CAF50;
+      cursor: pointer;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>🎮 我的小游戏网站</h1>
+    <p>单机版 | 可直接上传GitHub</p>
+  </header>
+
+  <!-- 主页 -->
+  <div id="home">
+    <div class="game-box">
+      <h2>贪吃蛇</h2>
+      <p>方向键控制，吃食物得分</p>
+      <button class="game-btn" onclick="showGame('snake')">开始游戏</button>
+    </div>
+  </div>
+
+  <!-- 贪吃蛇游戏 -->
+  <div id="snake" class="game-area">
+    <div class="back" onclick="backHome()">← 返回主页</div>
+    <h3>贪吃蛇</h3>
+    <p>得分：<span id="score">0</span></p>
+    <canvas id="can" width="300" height="300" 
+            style="background:#111; margin:15px auto; display:block"></canvas>
+    <button class="game-btn" onclick="startSnake()">重新开始</button>
+  </div>
+
+  <script>
+    // 页面切换
+    function showGame(game) {
+      document.getElementById('home').style.display = 'none';
+      document.getElementById(game).style.display = 'block';
+      if (game === 'snake') startSnake();
+    }
+    function backHome() {
+      document.querySelectorAll('.game-area').forEach(el => el.style.display = 'none');
+      document.getElementById('home').style.display = 'block';
+      if (gameLoop) clearInterval(gameLoop);
+    }
+
+    // ========== 贪吃蛇逻辑 ==========
+    let snake, food, dir, score, gameLoop;
+    const w = 20, count = 15;
+    const canvas = document.getElementById('can');
+    const ctx = canvas.getContext('2d');
+
+    function startSnake() {
+      clearInterval(gameLoop);
+      snake = [{x:7,y:7}];
+      food = {x:10,y:10};
+      dir = 'right';
+      score = 0;
+      document.getElementById('score').innerText = score;
+      gameLoop = setInterval(run, 120);
+    }
+
+    function run() {
+      move();
+      if (over()) { clearInterval(gameLoop); alert('游戏结束！得分：'+score); return; }
+      if (snake[0].x===food.x && snake[0].y===food.y) { 
+        score+=10; 
+        document.getElementById('score').innerText=score;
+        food = {x:Math.floor(Math.random()*count), y:Math.floor(Math.random()*count)};
+      } else {
+        snake.pop();
+      }
+      draw();
+    }
+
+    function move() {
+      let h = {...snake[0]};
+      if (dir==='left') h.x--;
+      if (dir==='right') h.x++;
+      if (dir==='up') h.y--;
+      if (dir==='down') h.y++;
+      snake.unshift(h);
+    }
+
+    function over() {
+      let h = snake[0];
+      if (h.x<0||h.x>=count||h.y<0||h.y>=count) return true;
+      for(let i=1;i<snake.length;i++){
+        if(snake[i].x===h.x&&snake[i].y===h.y) return true;
+      }
+      return false;
+    }
+
+    function draw() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle='#4CAF50';
+      snake.forEach(p=>{
+        ctx.fillRect(p.x*w,p.y*w,w-2,w-2);
+      });
+      ctx.fillStyle='#f44336';
+      ctx.fillRect(food.x*w,food.y*w,w-2,w-2);
+    }
+
+    document.addEventListener('keydown',e=>{
+      if(e.key==='ArrowLeft'&&dir!=='right') dir='left';
+      if(e.key==='ArrowRight'&&dir!=='left') dir='right';
+      if(e.key==='ArrowUp'&&dir!=='down') dir='up';
+      if(e.key==='ArrowDown'&&dir!=='up') dir='down';
+    });
+  </script>
+</body>
+</html>
